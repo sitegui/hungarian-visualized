@@ -1,0 +1,27 @@
+.costs-table .cost,
+.deltas-table .cost {
+    border-top: thin black solid;
+    border-left: thin black solid;
+    border-bottom: thin transparent solid;
+    border-right: thin transparent solid;
+    padding: 3px;
+}
+
+.costs-table td:last-child,
+.costs-table tr:last-child {
+    font-weight: bold;
+}
+
+.costs-table .matched,
+.deltas-table .matched {
+    background-color: #9f9;
+}
+
+.costs-table .find-min,
+.deltas-table .find-min {
+    border-color: red;
+}
+
+.deltas-table .min {
+    background-color: #f99;
+}

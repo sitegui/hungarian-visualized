@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Hungarian</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <link rel="stylesheet" href="css.css">
+</head>
+
+<body>
+    <div id="hungarian">
+        <div>
+            <p>Costs and labels</p>
+            <table class="costs-table">
+                <tr>
+                    <td></td>
+                    <td v-for="col in cols">{{ col.str }}</td>
+                </tr>
+                <tr v-for="row in rows">
+                    <td>{{ row.str }}</td>
+                    <td v-for="col in cols" :class="{matched: col.matched_row === row, cost: true}">
+                        {{ costs[row.i][col.j] }}
+                    </td>
+                    <td>{{ row.label }}</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td v-for="col in cols">{{ col.label }}</td>
+                </tr>
+            </table>
+
+            <p>Deltas</p>
+            <table class="deltas-table">
+                <tr>
+                    <td></td>
+                    <td v-for="col in cols">{{ col.str }}</td>
+                </tr>
+                <tr v-for="row in rows">
+                    <td>{{ row.str }}</td>
+                    <td v-for="col in cols" :class="{
+                        matched: col.matched_row === row,
+                        'find-min': row.visited && col.path === null,
+                        cost: true,
+                        min: min_delta_row === row && min_delta_col === col}">
+                        {{ costs[row.i][col.j] - row.label - col.label }}
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <p>
+            <button @click="reduce">1. Reduce</button>
+            <button @click="greedy">2. Greedy</button>
+            <button @click="prepare_iteration">3. Prepare iteration</button>
+            <button @click="step_iteration">4. Step iteration</button>
+        </p>
+
+        <svg width="600" height="600">
+            <!-- row nodes -->
+            <g v-for="(row, i) in rows">
+                <circle :cx="d.X1" :cy="d.YM + d.R + (2*d.R + d.YM) * i" :r="d.R"
+                    :stroke="row.visited ? '#33f' : (row.matched_col ? '#696' : 'grey')"
+                    :stroke-width="row.visited || row.matched_col ? 3 : 1" fill="#bbb" />
+                <text :x="d.X1 - 2*d.R" :y="d.YM + d.R + (2*d.R + d.YM) * i" dominant-baseline="middle"
+                    text-anchor="middle">{{ row.str }}</text>
+                <text :x="d.X1" :y="d.YM + d.R + (2*d.R + d.YM) * i" dominant-baseline="middle"
+                    text-anchor="middle">{{ row.label }}</text>
+                <polygon v-if="row.head" points="-3,-.4 -1,-.4 -1,-1 0,0 -1,1 -1,.4 -3,.4" fill="#33f"
+                    :transform="'translate('+(d.X1-d.R-25)+' '+(d.YM + d.R + (2*d.R + d.YM) * i)+') scale(10)'" />
+            </g>
+
+            <!-- col nodes -->
+            <g v-for="(col, j) in cols">
+                <circle :cx="d.X2" :cy="d.YM + d.R + (2*d.R + d.YM) * j" :r="d.R"
+                    :stroke="col.path ? '#33f' : (col.matched_row ? '#696' : 'grey')"
+                    :stroke-width="col.path || col.matched_row ? 3 : 1" fill="#bbb" />
+                <text :x="d.X2" :y="d.YM + d.R + (2*d.R + d.YM) * j" dominant-baseline="middle"
+                    text-anchor="middle">{{ col.label }}</text>
+                <text :x="d.X2 + 2*d.R" :y="d.YM + d.R + (2*d.R + d.YM) * j" dominant-baseline="middle"
+                    text-anchor="middle">{{ col.str }}</text>
+                <polygon v-if="col.head" points="-3,-.4 -1,-.4 -1,-1 0,0 -1,1 -1,.4 -3,.4" fill="#33f"
+                    :transform="'translate('+(d.X2+d.R+25)+' '+(d.YM + d.R + (2*d.R + d.YM) * j)+') scale(-10 10)'" />
+            </g>
+
+            <!-- edges -->
+            <g v-for="(row, i) in rows">
+                <g v-for="(col, j) in cols">
+                    <line v-if="costs[i][j] &lt;= row.label + col.label" :x1="d.X1 + d.R"
+                        :y1="d.YM + d.R + (2*d.R + d.YM) * i" :x2="d.X2 - d.R" :y2="d.YM + d.R + (2*d.R + d.YM) * j"
+                        :stroke="col.matched_row === row ? (col.is_path_real ? '#484' : '#7a7') : (col.path === row ? (col.is_path_real ? '#33f' : '#99f') : 'black')"
+                        :stroke-width="col.matched_row === row || col.path === row ? 3 : 1" />
+                </g>
+            </g>
+        </svg>
+    </div>
+
+    <script src="js.js"></script>
+</body>
+
+</html>
