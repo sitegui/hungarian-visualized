@@ -5,60 +5,75 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Hungarian</title>
+    <title>The Hungarian Algorithm Visualized</title>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <link rel="stylesheet" href="css.css">
 </head>
 
 <body>
-    <div id="hungarian">
-        <div>
-            <p>Costs and labels</p>
-            <table class="costs-table">
-                <tr>
-                    <td></td>
-                    <td v-for="col in cols">{{ col.str }}</td>
-                </tr>
-                <tr v-for="row in rows">
-                    <td>{{ row.str }}</td>
-                    <td v-for="col in cols" :class="{matched: col.matched_row === row, cost: true}">
-                        {{ costs[row.i][col.j] }}
-                    </td>
-                    <td>{{ row.label }}</td>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td v-for="col in cols">{{ col.label }}</td>
-                </tr>
-            </table>
+    <h1>The Hungarian Algorithm Visualized</h1>
+    <div id="builder">
+        <h2>Random initialization</h2>
+        <form>
+            <p><label>Size: <input type="number" min="1" max="10" v-model="size" size="3"></label></p>
+            <p><label>Seed: <input type="number" min="1" max="1000000" v-model="seed" size="10"></label></p>
+            <p><button @click.prevent='build_random'>Go</button></p>
+        </form>
+        <h2>Custom</h2>
+        <form>
+            <textarea rows="10" cols="30" v-model="custom"></textarea>
+            <p><button @click.prevent='build_custom'>Go</button></p>
+        </form>
+    </div>
+    <div id="hungarian" style="display: none;">
+        <div class="flex-container">
+            <div>
+                <p>Costs and labels</p>
+                <table class="costs-table">
+                    <tr>
+                        <td></td>
+                        <td v-for="col in cols">{{ col.str }}</td>
+                    </tr>
+                    <tr v-for="row in rows">
+                        <td>{{ row.str }}</td>
+                        <td v-for="col in cols" :class="{matched: col.matched_row === row, cost: true}">
+                            {{ costs[row.i][col.j] }}
+                        </td>
+                        <td>{{ row.label }}</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td v-for="col in cols">{{ col.label }}</td>
+                    </tr>
+                </table>
+            </div>
 
-            <p>Deltas</p>
-            <table class="deltas-table">
-                <tr>
-                    <td></td>
-                    <td v-for="col in cols">{{ col.str }}</td>
-                </tr>
-                <tr v-for="row in rows">
-                    <td>{{ row.str }}</td>
-                    <td v-for="col in cols" :class="{
+            <div>
+                <p>Deltas</p>
+                <table class="deltas-table">
+                    <tr>
+                        <td></td>
+                        <td v-for="col in cols">{{ col.str }}</td>
+                    </tr>
+                    <tr v-for="row in rows">
+                        <td>{{ row.str }}</td>
+                        <td v-for="col in cols" :class="{
                         matched: col.matched_row === row,
                         'find-min': row.visited && col.path === null,
                         cost: true,
                         min: min_delta_row === row && min_delta_col === col}">
-                        {{ costs[row.i][col.j] - row.label - col.label }}
-                    </td>
-                </tr>
-            </table>
+                            {{ costs[row.i][col.j] - row.label - col.label }}
+                        </td>
+                    </tr>
+                </table>
+            </div>
         </div>
 
         <p>
-            <button @click="reduce">1. Reduce</button>
-            <button @click="greedy">2. Greedy</button>
-            <button @click="prepare_iteration">3. Prepare iteration</button>
-            <button @click="step_iteration">4. Step iteration</button>
+            <button @click="do_step">Next step: {{ next_step_str }}</button>
         </p>
 
-        <svg width="600" height="600">
+        <svg width="500" :height="2*(d.YM + d.R) + (2*d.R + d.YM) * (n-1)">
             <!-- row nodes -->
             <g v-for="(row, i) in rows">
                 <circle :cx="d.X1" :cy="d.YM + d.R + (2*d.R + d.YM) * i" :r="d.R"

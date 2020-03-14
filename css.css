@@ -25,3 +25,11 @@
 .deltas-table .min {
     background-color: #f99;
 }
+
+.flex-container {
+    display: flex;
+}
+
+.flex-container>* {
+    margin: 25px;
+}
